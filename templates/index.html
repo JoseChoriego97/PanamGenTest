@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generación Energética Panamá</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Cargar Chart.js -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    canvas {
+      max-width: 100%; /* Ajustar tamaño de las gráficas */
+      height: 300px;    /* Altura específica */
+    }
+    button {
+      background-color: #007BFF; /* Color azul */
+      color: white;
+      border: none;
+      border-radius: 10px; /* Border radius */
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      margin-bottom: 20px; /* Espacio debajo del botón */
+    }
+    button:hover {
+      background-color: #0056b3; /* Color cuando se pasa el mouse */
+    }
+    button:active {
+      background-color: #004099; /* Color cuando se hace clic */
+    }
+    #typeSelector {
+      margin-bottom: 20px;
+      font-size: 16px;
+      padding: 8px;
+      border-radius: 8px; /* Border radius del selector */
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .chart-container {
+      margin-bottom: 40px; /* Separar las gráficas */
+      display: none; /* Ocultar inicialmente */
+    }
+    .chart-title {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Generación Energética de Panamá</h1>
+
+    <!-- Botón de actualizar datos con estilo -->
+    <button id="updateButton">Actualizar Datos</button>
+
+    <!-- Gráfico de pastel por tipo de generación -->
+    <div class="chart-container" id="typeChartContainer">
+      <div class="chart-title">Porcentaje por Tipo de Generador</div>
+      <canvas id="generationByTypeChart"></canvas>
+    </div>
+
+    <!-- Selector de tipo de planta (colocado debajo del gráfico de pastel) -->
+    <select id="typeSelector">
+      <option value="" disabled selected>Seleccione un tipo de planta</option>
+    </select>
+
+    <!-- Gráfico de barras por generador -->
+    <div class="chart-container" id="generatorChartContainer">
+      <div class="chart-title">Porcentaje por Generadora</div>
+      <canvas id="generationByGeneratorChart"></canvas>
+    </div>
+  </div>
+  <!-- Enlace al archivo JavaScript externo -->
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
