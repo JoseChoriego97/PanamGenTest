@@ -21,9 +21,7 @@ def limpiar_texto(texto):
     return texto_limpio
 
 
-
 # Ruta principal, para actualizar y realizar el scrapping de la pagina de energia
-
 @app.route('/update-data', methods=['GET'])
 def update_data():
     url = "https://sitr.cnd.com.pa/m/pub/gen.html"
@@ -50,7 +48,13 @@ def update_data():
 
                 for genindex in range(len(grouped_columns)):
                     generator = limpiar_texto(grouped_columns[genindex][0].text.strip())
-                    percentage = float(grouped_columns[genindex][1].text.strip().replace('%', ''))
+                    percentage_str = grouped_columns[genindex][1].text.strip().replace('%', '')
+
+                    # Validar si el porcentaje puede convertirse a número, si no, lo marcamos como None
+                    try:
+                        percentage = float(percentage_str)
+                    except ValueError:
+                        percentage = None  # Si no se puede convertir, lo dejamos como None
 
                     generation_data.append({
                         'generator': generator,
@@ -63,13 +67,17 @@ def update_data():
         total_percentage = 0
 
         for data in generation_data:
-            type_summary[data['type']] = type_summary.get(data['type'], 0) + data['percentage']
-            total_percentage += data['percentage']
+            if data['percentage'] is not None:  # Solo sumar si el porcentaje no es None
+                type_summary[data['type']] = type_summary.get(data['type'], 0) + data['percentage']
+                total_percentage += data['percentage']
 
         # Paso 2: Calcular el porcentaje total para cada tipo de planta
         true_percentage_summary = {}
         for energy_type, percentage in type_summary.items():
-            true_percentage_summary[energy_type] = (percentage / total_percentage) * 100
+            if total_percentage == 0:
+                true_percentage_summary[energy_type] = None  # Evitar división por cero
+            else:
+                true_percentage_summary[energy_type] = (percentage / total_percentage) * 100
 
         # Paso 3: Calcular el porcentaje por generador respecto al tipo de planta
         generator_percentage_by_type = {}
@@ -77,9 +85,14 @@ def update_data():
             if data['type'] not in generator_percentage_by_type:
                 generator_percentage_by_type[data['type']] = []
 
-            # Calcular porcentaje respecto al tipo de planta
-            type_total_percentage = type_summary[data['type']]
-            relative_percentage = (data['percentage'] / type_total_percentage) * 100
+            # Calcular porcentaje respecto al tipo de planta solo si el total del tipo no es cero
+            type_total_percentage = type_summary.get(data['type'], 0)
+
+            if type_total_percentage == 0 or data['percentage'] is None:
+                relative_percentage = None  # Si hay división entre cero o datos inválidos, poner None
+            else:
+                relative_percentage = (data['percentage'] / type_total_percentage) * 100
+
             generator_percentage_by_type[data['type']].append({
                 'generator': data['generator'],
                 'percentage': relative_percentage
@@ -98,6 +111,7 @@ def update_data():
             'message': 'Error al obtener los datos',
             'error': str(e)
         }), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
